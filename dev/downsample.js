@@ -1,4 +1,4 @@
-function downsizeImage(img)
+function afterImageLoaded(img)
 {
   var canvas = document.createElement('canvas')
   var ctx = canvas.getContext("2d")
@@ -24,10 +24,10 @@ function downsizeImage(img)
 var sourceImg = document.getElementById('source')
 
 if (sourceImg.complete) {
-  downsizeImage(sourceImg)
+  afterImageLoaded(sourceImg)
 }
 else {
   sourceImg.addEventListener('load', function(e) {
-    downsizeImage(this)
+    afterImageLoaded(this)
   })
 }

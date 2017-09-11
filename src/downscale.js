@@ -1,18 +1,16 @@
-function downscale(source, destWidth, destHeight, options)
+function performImageDownscale(img, destWidth, destHeight, options)
 {
-  options = options || {}
+  var canvas = performImageDownscale.canvas
+  var ctx    = canvas.getContext("2d")
 
-  var canvas = downscale.canvas
-  var ctx    = downscale.ctx
+  canvas.width  = img.naturalWidth
+  canvas.height = img.naturalHeight
 
-  canvas.width  = sourceImg.naturalWidth
-  canvas.height = sourceImg.naturalHeight
-
-  ctx.drawImage(sourceImg, 0, 0)
+  ctx.drawImage(img, 0, 0)
   var sourceImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
-  var sourceWidth  = sourceImg.naturalWidth
-  var sourceHeight = sourceImg.naturalHeight
+  var sourceWidth  = img.naturalWidth
+  var sourceHeight = img.naturalHeight
 
   var destRatio   = destWidth / destHeight
   var sourceRatio = sourceWidth / sourceHeight
@@ -24,8 +22,8 @@ function downscale(source, destWidth, destHeight, options)
     sourceWidth = sourceHeight * destRatio
   }
 
-  var sourceX = options.sourceX || (sourceImg.naturalWidth  - sourceWidth)  / 2 >> 0
-  var sourceY = options.sourceY || (sourceImg.naturalHeight - sourceHeight) / 2 >> 0
+  var sourceX = options.sourceX || (img.naturalWidth  - sourceWidth)  / 2 >> 0
+  var sourceY = options.sourceY || (img.naturalHeight - sourceHeight) / 2 >> 0
 
   var processedImageData = downsample(sourceImageData, destWidth, destHeight,
     sourceX, sourceY, sourceWidth, sourceHeight)
@@ -35,12 +33,47 @@ function downscale(source, destWidth, destHeight, options)
 
   ctx.putImageData(processedImageData, 0, 0)
 
-  var destDataURL = canvas.toDataURL('image/jpeg', options.quality || .85)
-
-  return Promise.resolve(destDataURL)
+  return canvas.toDataURL('image/jpeg', options.quality || .85)
 }
 
-if (!downscale.canvas && !downscale.ctx) {
-  downscale.canvas = document.createElement('canvas')
-  downscale.ctx    = downscale.canvas.getContext("2d")
+if (!performImageDownscale.canvas) {
+  performImageDownscale.canvas = document.createElement('canvas')
+}
+
+function downscale(source, destWidth, destHeight, options)
+{
+  function downscaleResolve(sourceImg, resolve)
+  {
+    if (sourceImg.complete) {
+      resolve(performImageDownscale(sourceImg, destWidth, destHeight, options))
+    }
+    else {
+      sourceImg.onload = function(e) {
+        resolve(performImageDownscale(this, destWidth, destHeight, options))
+      }
+    }
+  }
+
+  options = options || {}
+
+  if (source instanceof File) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader
+
+      reader.onerror = reject
+      reader.onload = function() {
+        var sourceImg = document.createElement("img")
+        sourceImg.src = this.result
+        downscaleResolve(sourceImg, resolve)
+      }
+
+      reader.readAsDataURL(source)
+    })
+  }
+
+  if (source instanceof HTMLImageElement) {
+    return new Promise(function(resolve, reject) {
+      downscaleResolve(source, resolve)
+    })
+  }
 }

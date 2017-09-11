@@ -1,0 +1,19 @@
+{
+  "name": "downscale",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ytiurin/downscale.git"
+  },
+  "scripts": {
+    "start": "http-server ./ -c-1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eugene Tiurin",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^0.10.0"
+  }
+}

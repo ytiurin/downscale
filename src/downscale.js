@@ -1,5 +1,9 @@
 function performImageDownscale(img, destWidth, destHeight, options)
 {
+  if (!performImageDownscale.canvas) {
+    performImageDownscale.canvas = document.createElement('canvas')
+  }
+
   var canvas = performImageDownscale.canvas
   var ctx    = canvas.getContext("2d")
 
@@ -36,10 +40,6 @@ function performImageDownscale(img, destWidth, destHeight, options)
   return canvas.toDataURL('image/jpeg', options.quality || .85)
 }
 
-if (!performImageDownscale.canvas) {
-  performImageDownscale.canvas = document.createElement('canvas')
-}
-
 function downscale(source, destWidth, destHeight, options)
 {
   function downscaleResolve(sourceImg, resolve)
@@ -55,19 +55,32 @@ function downscale(source, destWidth, destHeight, options)
   }
 
   options = options || {}
+  var URL = window.URL || window.webkitURL
 
   if (source instanceof File) {
     return new Promise(function(resolve, reject) {
-      var reader = new FileReader
+      var sourceImg = document.createElement("img")
+      sourceImg.src = URL.createObjectURL(source)
+      downscaleResolve(sourceImg, resolve)
+    })
+  }
 
-      reader.onerror = reject
-      reader.onload = function() {
+  if (typeof source === "string") {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest
+
+      xhr.open("GET", source)
+      xhr.responseType = "arraybuffer"
+
+      xhr.onload = function() {
+        var arrayBufferView = new Uint8Array( this.response )
+        var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
         var sourceImg = document.createElement("img")
-        sourceImg.src = this.result
+        sourceImg.src = URL.createObjectURL(blob)
         downscaleResolve(sourceImg, resolve)
       }
 
-      reader.readAsDataURL(source)
+      xhr.send()
     })
   }
 

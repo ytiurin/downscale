@@ -8,12 +8,13 @@
   },
   "scripts": {
     "start": "http-server ./ -c-1",
-    "test": "make downscale.js && echo \"Error: no test specified\" && exit 1"
+    "test": "make downscale.js && jest"
   },
   "author": "Eugene Tiurin",
   "license": "MIT",
   "main": "./dest/downscale.js",
   "devDependencies": {
-    "http-server": "^0.10.0"
+    "http-server": "^0.10.0",
+    "jest": "^21.0.2"
   }
 }

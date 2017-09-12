@@ -104,7 +104,40 @@ function performImageDownscale(img, destWidth, destHeight, options)
 
   ctx.putImageData(processedImageData, 0, 0)
 
-  return canvas.toDataURL('image/jpeg', options.quality || .85)
+  if (options.returnCanvas) {
+    return canvas
+  }
+  return canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
+    options.quality || .85)
+}
+
+function detectSourceType(source)
+{
+  if (source instanceof File) {
+    return "File"
+  }
+  if (typeof source === "string") {
+    return "URL"
+  }
+  if (source instanceof HTMLImageElement) {
+    return "HTMLImageElement"
+  }
+}
+
+function validateArguments(args)
+{
+  if (args.length < 3) {
+    return new TypeError(`3 arguments required, but only ${args.length} present.`)
+  }
+  if (!detectSourceType(args[0])) {
+    return new TypeError("First argument should be HTMLImageElement, File of String")
+  }
+  if (typeof args[1] !== "number") {
+    return new TypeError("Second argument should be a number")
+  }
+  if (typeof args[2] !== "number") {
+    return new TypeError("Third argument should be a number")
+  }
 }
 
 function downscale(source, destWidth, destHeight, options)
@@ -121,41 +154,45 @@ function downscale(source, destWidth, destHeight, options)
     }
   }
 
+  var err = validateArguments(arguments)
+  if (err instanceof TypeError) {
+    return Promise.reject(err)
+  }
+
   options = options || {}
   var URL = window.URL || window.webkitURL
 
-  if (source instanceof File) {
-    return new Promise(function(resolve, reject) {
-      var sourceImg = document.createElement("img")
-      sourceImg.src = URL.createObjectURL(source)
-      downscaleResolve(sourceImg, resolve)
-    })
-  }
+  return new Promise(function(resolve, reject) {
+    switch (detectSourceType(source)) {
 
-  if (typeof source === "string") {
-    return new Promise(function(resolve, reject) {
-      var xhr = new XMLHttpRequest
-
-      xhr.open("GET", source)
-      xhr.responseType = "arraybuffer"
-
-      xhr.onload = function() {
-        var arrayBufferView = new Uint8Array( this.response )
-        var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
+      case "File":
         var sourceImg = document.createElement("img")
-        sourceImg.src = URL.createObjectURL(blob)
+        sourceImg.src = URL.createObjectURL(source)
         downscaleResolve(sourceImg, resolve)
-      }
+        break
 
-      xhr.send()
-    })
-  }
+      case "HTMLImageElement":
+        downscaleResolve(source, resolve)
+        break
 
-  if (source instanceof HTMLImageElement) {
-    return new Promise(function(resolve, reject) {
-      downscaleResolve(source, resolve)
-    })
-  }
+      case "URL":
+        var xhr = new XMLHttpRequest
+
+        xhr.open("GET", source)
+        xhr.responseType = "arraybuffer"
+
+        xhr.onload = function() {
+          var arrayBufferView = new Uint8Array( this.response )
+          var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
+          var sourceImg = document.createElement("img")
+          sourceImg.src = URL.createObjectURL(blob)
+          downscaleResolve(sourceImg, resolve)
+        }
+
+        xhr.send()
+        break
+    }
+  })
 }
     return downscale
 }));

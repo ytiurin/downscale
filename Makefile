@@ -1,7 +1,7 @@
 downscale.js:
-	rm -rf ./dist
-	mkdir dist
-	( \
+	@rm -rf ./dist
+	@mkdir dist
+	@( \
 		printf "(function (root, factory) {\n"; \
 		printf "    if (typeof define === 'function' && define.amd) {\n"; \
 		printf "        define([], factory);\n"; \

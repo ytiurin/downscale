@@ -18,20 +18,25 @@ test('Obligate third argument', () => {
     rejects.toBeInstanceOf(TypeError);
 });
 
-test('First argument should be of proper type', () => {
+test('First argument should be of a proper type', () => {
   expect.assertions(1);
   return expect(downscale(null, null, null)).
     rejects.toBeInstanceOf(TypeError);
 });
 
-test('Second argument should be of proper type', () => {
+test('Second argument should be a number', () => {
   expect.assertions(1);
   return expect(downscale("", null, null)).
     rejects.toBeInstanceOf(TypeError);
 });
 
-test('Third argument should be of proper type', () => {
+test('Third argument should be a number', () => {
   expect.assertions(1);
   return expect(downscale("", 1, null)).
     rejects.toBeInstanceOf(TypeError);
+});
+
+test('Result should be a promise', () => {
+  expect.assertions(1);
+  return expect(downscale("", 1, 1)).toBeInstanceOf(Promise);
 });

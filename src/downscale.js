@@ -1,20 +1,21 @@
-function performImageDownscale(img, destWidth, destHeight, options)
+function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
+  destHeight, options)
 {
-  if (!performImageDownscale.canvas) {
-    performImageDownscale.canvas = document.createElement('canvas')
+  if (!performCanvasDownscale.canvas) {
+    performCanvasDownscale.canvas = document.createElement('canvas')
   }
 
-  var canvas = performImageDownscale.canvas
+  var canvas = performCanvasDownscale.canvas
   var ctx    = canvas.getContext("2d")
 
-  canvas.width  = img.naturalWidth
-  canvas.height = img.naturalHeight
+  canvas.width  = sourceWidth
+  canvas.height = sourceHeight
 
-  ctx.drawImage(img, 0, 0)
+  ctx.drawImage(source, 0, 0)
   var sourceImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
-  var sourceWidth  = img.naturalWidth
-  var sourceHeight = img.naturalHeight
+  var origSourceWidth  = sourceWidth
+  var origSourceHeight = sourceHeight
 
   var destRatio   = destWidth / destHeight
   var sourceRatio = sourceWidth / sourceHeight
@@ -26,8 +27,8 @@ function performImageDownscale(img, destWidth, destHeight, options)
     sourceWidth = sourceHeight * destRatio
   }
 
-  var sourceX = options.sourceX || (img.naturalWidth  - sourceWidth)  / 2 >> 0
-  var sourceY = options.sourceY || (img.naturalHeight - sourceHeight) / 2 >> 0
+  var sourceX = options.sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0
+  var sourceY = options.sourceY || (origSourceHeight - sourceHeight) / 2 >> 0
 
   var processedImageData = downsample(sourceImageData, destWidth, destHeight,
     sourceX, sourceY, sourceWidth, sourceHeight)
@@ -44,16 +45,63 @@ function performImageDownscale(img, destWidth, destHeight, options)
     options.quality || .85)
 }
 
+function waitArrayBufferLoad(source)
+{
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest
+
+    xhr.open("GET", source)
+    xhr.responseType = "arraybuffer"
+
+    xhr.addEventListener("load", function() {
+      resolve(this.response)
+    })
+
+    xhr.send()
+  })
+}
+
+function waitImgLoad(img)
+{
+  if (img.complete) {
+    return Promise.resolve()
+  }
+  else {
+    return new Promise(function(resolve, reject) {
+      img.addEventListener("load", function() {
+        resolve()
+      })
+    })
+  }
+}
+
+function waitVideoLoad(video)
+{
+  if (video.readyState > 1) {
+    return Promise.resolve()
+  }
+  else {
+    return new Promise(function(resolve, reject) {
+      video.addEventListener("loadeddata", function() {
+        resolve()
+      })
+    })
+  }
+}
+
 function detectSourceType(source)
 {
   if (source instanceof File) {
     return "File"
   }
-  if (typeof source === "string") {
-    return "URL"
-  }
   if (source instanceof HTMLImageElement) {
     return "HTMLImageElement"
+  }
+  if (source instanceof HTMLVideoElement) {
+    return "HTMLVideoElement"
+  }
+  if (typeof source === "string") {
+    return "URL"
   }
 }
 
@@ -63,7 +111,7 @@ function validateArguments(args)
     return new TypeError(`3 arguments required, but only ${args.length} present.`)
   }
   if (!detectSourceType(args[0])) {
-    return new TypeError("First argument should be HTMLImageElement, File of String")
+    return new TypeError("First argument should be HTMLImageElement, HTMLVideoElement, File of String")
   }
   if (typeof args[1] !== "number") {
     return new TypeError("Second argument should be a number")
@@ -75,18 +123,6 @@ function validateArguments(args)
 
 function downscale(source, destWidth, destHeight, options)
 {
-  function downscaleResolve(sourceImg, resolve)
-  {
-    if (sourceImg.complete) {
-      resolve(performImageDownscale(sourceImg, destWidth, destHeight, options))
-    }
-    else {
-      sourceImg.onload = function(e) {
-        resolve(performImageDownscale(this, destWidth, destHeight, options))
-      }
-    }
-  }
-
   var err = validateArguments(arguments)
   if (err instanceof TypeError) {
     return Promise.reject(err)
@@ -96,33 +132,51 @@ function downscale(source, destWidth, destHeight, options)
   var URL = window.URL || window.webkitURL
 
   return new Promise(function(resolve, reject) {
+    function resolveDownscale(source, sourceWidth, sourceHeight) {
+      resolve(
+        performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
+          destHeight, options))
+    }
+
     switch (detectSourceType(source)) {
 
       case "File":
         var sourceImg = document.createElement("img")
         sourceImg.src = URL.createObjectURL(source)
-        downscaleResolve(sourceImg, resolve)
+        waitImgLoad(sourceImg).
+        then(function() {
+          resolveDownscale(sourceImg, sourceImg.naturalWidth,
+            sourceImg.naturalHeight)
+        })
         break
 
       case "HTMLImageElement":
-        downscaleResolve(source, resolve)
+        waitImgLoad(source).
+        then(function() {
+          resolveDownscale(source, source.naturalWidth, source.naturalHeight)
+        })
+        break
+
+      case "HTMLVideoElement":
+        waitVideoLoad(source).
+        then(function() {
+          resolveDownscale(source, source.videoWidth, source.videoHeight)
+        })
         break
 
       case "URL":
-        var xhr = new XMLHttpRequest
-
-        xhr.open("GET", source)
-        xhr.responseType = "arraybuffer"
-
-        xhr.onload = function() {
-          var arrayBufferView = new Uint8Array( this.response )
+        waitArrayBufferLoad(source).
+        then(function(arrayBuffer) {
+          var arrayBufferView = new Uint8Array(arrayBuffer)
           var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
           var sourceImg = document.createElement("img")
           sourceImg.src = URL.createObjectURL(blob)
-          downscaleResolve(sourceImg, resolve)
-        }
-
-        xhr.send()
+          waitImgLoad(sourceImg).
+          then(function() {
+            resolveDownscale(sourceImg, sourceImg.naturalWidth,
+              sourceImg.naturalHeight)
+          })
+        })
         break
     }
   })

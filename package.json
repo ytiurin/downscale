@@ -12,7 +12,7 @@
   },
   "author": "Eugene Tiurin",
   "license": "MIT",
-  "main": "./dest/downscale.js",
+  "main": "./dist/downscale.js",
   "devDependencies": {
     "http-server": "^0.10.0",
     "jest": "^21.0.2"

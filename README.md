@@ -10,7 +10,7 @@ Promise<DOMString> downscale(source, width, height[, options]);
 
 ### Parameters
 <dl>
-  <dt><code><strong>source</strong></code></dt>
+  <dt><strong>source</strong></dt>
   <dd>Defines the source of the image data to downscale. This can either be:
     <ul>
       <li>
@@ -28,10 +28,10 @@ Promise<DOMString> downscale(source, width, height[, options]);
     </ul>
   </dd>
 
-  <dt>width</dt>
+  <dt><strong>width</strong></dt>
   <dd>The width of the resulting image.</dd>
 
-  <dt>height</dt>
+  <dt><strong>height</strong></dt>
   <dd>The height of the resulting image.</dd>
 </dl>
 

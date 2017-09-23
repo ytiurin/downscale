@@ -7,8 +7,9 @@
     "url": "https://github.com/ytiurin/downscale.git"
   },
   "scripts": {
+    "build": "make downscale.js",
     "start": "http-server ./ -c-1",
-    "test": "make downscale.js && jest"
+    "test": "npm run build && jest"
   },
   "author": "Eugene Tiurin",
   "license": "MIT",

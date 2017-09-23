@@ -1,15 +1,9 @@
+
 Better image downscale with canvas
 ===================================
 This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images such as photos taken by smartphone.
 
-```javascript
-downscale(sourceImg, 170, 170).
-then(function(dataURL) {
-  var previewImg = document.createElement('img')
-  previewImg.src = dataURL
-  document.body.appendChild(previewImg)
-})
-```
+![Better image downscale demo](https://github.com/ytiurin/downscale/raw/master/public/demo.jpg)
 
 Motivation
 ----------
@@ -18,6 +12,17 @@ While other image resizing libraries are based on complex interpolation algorith
 On the other hand, browsers implement very fast [`HTMLCanvasElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement "The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements.") downsampling, when the pixel from source position is directly transfered to the destination position, loosing all the neighbouring pixels information. The resulting image may often look very noisy.
 
 To resolve this problem, the proposed method implements a simple [linear downsampling](https://en.wikipedia.org/wiki/Decimation_(signal_processing) "In digital signal processing, decimation is the process of reducing the sampling rate of a signal.") algorithm, that produces preferable results with relatively small processing time.
+
+Usage
+-----
+```javascript
+downscale(sourceImg, 170, 170).
+then(function(dataURL) {
+  var previewImg = document.createElement('img')
+  previewImg.src = dataURL
+  document.body.appendChild(previewImg)
+})
+```
 
 Syntax
 ------

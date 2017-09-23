@@ -1,7 +1,7 @@
 
 Better image downscale with canvas
 ===================================
-This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images such as photos taken by smartphone.
+This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images such as photos taken with a smartphone.
 
 ![Better image downscale demo](https://github.com/ytiurin/downscale/raw/master/public/demo.jpg)
 

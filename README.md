@@ -19,6 +19,12 @@ This function is using the approach, proposed by [Paul Rouget](http://paulrouget
 
 Also, the usage of [`Math.round()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round "The Math.round() function returns the value of a number rounded to the nearest integer.") method is avoided in favour of [Bitwise operators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators "Bitwise operators treat their operands as a sequence of 32 bits (zeroes and ones), rather than as decimal, hexadecimal, or octal numbers. For example, the decimal number nine has a binary representation of 1001. Bitwise operators perform their operations on such binary representations, but they return standard JavaScript numerical values."), which gives a significant boost in performance.
 
+Image cropping
+--------------
+Image cropping is very often used in pair with resizing, but both can be very naturally combined. As we don't need to iterate through pixels in cropped areas, the function does both downscaling and cropping in range of the same processing loop. This saves some memory and processing time.
+
+By default, the source image is cropped in the way, so that the center of the image whould transfer to the resulting image.
+
 Usage
 -----
 ```javascript

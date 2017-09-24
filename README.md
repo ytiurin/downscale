@@ -11,7 +11,7 @@ While other image resizing libraries are based on complex interpolation algorith
 
 On the other hand, browsers implement very fast [`HTMLCanvasElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement "The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements.") downsampling, when the pixel from source position is directly transfered to the destination position, loosing all the neighbouring pixels information. The resulting image may often look very noisy.
 
-To resolve this problem, the proposed method implements a simple [linear downsampling](https://en.wikipedia.org/wiki/Decimation_(signal_processing) "In digital signal processing, decimation is the process of reducing the sampling rate of a signal.") algorithm, that produces preferable results with relatively small processing time.
+To resolve this problem, the proposed function does simple [linear downsampling](https://en.wikipedia.org/wiki/Decimation_(signal_processing) "In digital signal processing, decimation is the process of reducing the sampling rate of a signal."), producing preferable results with relatively small processing time.
 
 Usage
 -----

@@ -32,3 +32,9 @@ build:
 	) \
 	> dist/downscale.js
 	@echo "DONE"
+
+postpublish:
+	git add package.json
+	git commit -m 'Version ${VERSION}'
+	git tag -a ${VERSION} -m 'Version ${VERSION}'
+	git push && git push --tags

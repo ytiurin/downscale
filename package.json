@@ -10,8 +10,10 @@
   "homepage": "https://github.com/ytiurin/downscale",
   "scripts": {
     "build": "make build",
+    "postpublish": "make postpublish",
+    "pretest": "npm run build",
     "start": "http-server ./ -c-1",
-    "test": "npm run build && jest"
+    "test": "jest"
   },
   "author": {"name" : "Eugene Tiurin", "email" : "yevhentiurin@gmail.com"},
   "license": "MIT",

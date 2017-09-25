@@ -135,3 +135,36 @@ function filesChanged(files)
   }
 }
 ```
+
+### Working with `<img>`
+Processing an `<img>` element is quite simple. The function will wait for image load, so you don't have to worry about it.
+### HTML
+```html
+<img id="source" src="../public/1.jpg" />
+```
+### Javascript
+```javascript
+var sourceImg = document.getElementById('source');
+
+downscale(sourceImg, 400, 400).
+then(function(dataURL) {
+  var destImg = document.createElement('img');
+  destImg.src = dataURL;
+  document.body.appendChild(destImg);
+})
+```
+
+### Using URL string
+The function can upload the source image from the given URL with no extra code needed. Keep in mind that the image should share [origin](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin "The Origin request header indicates where a fetch originates from. It doesn't include any path information, but only the server name. It is sent with CORS requests, as well as with POST requests. It is similar to the Referer header, but, unlike this header, it doesn't disclose the whole path.") with the code file.
+```javascript
+downscale("/public/1.jpg", 400, 400).
+then(function(dataURL) {
+  var destImg = document.createElement('img');
+  destImg.src = dataURL;
+  document.body.appendChild(destImg);
+})
+```
+
+License
+-------
+MIT

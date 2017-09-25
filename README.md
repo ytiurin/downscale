@@ -25,15 +25,10 @@ Image cropping is very often used in pair with resizing, but both can be very na
 
 By default, the source image is cropped in the way, that the center of the source image is transfered to the resulting image.
 
-Usage
------
-```javascript
-downscale(sourceImg, 170, 170).
-then(function(dataURL) {
-  var previewImg = document.createElement('img')
-  previewImg.src = dataURL
-  document.body.appendChild(previewImg)
-})
+Install
+-------
+```
+npm install downscale
 ```
 
 Syntax
@@ -109,3 +104,34 @@ Promise<DOMString> downscale(source, width, height[, options]);
 
 ### Return value
 A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") that resolves to a [`DOMString`](https://developer.mozilla.org/en-US/docs/Web/API/DOMString "DOMString is a UTF-16 String. As JavaScript already uses such strings, DOMString is mapped directly to a String.") containing the resulting image in [data URI](https://developer.mozilla.org/en-US/docs/Web/HTTP/data_URIs "URLs prefixed with the data: scheme, allow content creators to embed small files inline in documents.") format.
+
+Examples
+--------
+### Using file input
+This is just a simple code snippet which uses the form file input as a source of the image data.
+### HTML
+```html
+<input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
+<form method="post"><input type="submit"/></form>
+```
+### Javascript
+```javascript
+function filesChanged(files)
+{
+  for (var i = 0; i < files.length; i++) {
+    downscale(files[i], 400, 400).
+    then(function(dataURL) {
+      var destInput = document.createElement("input");
+      destInput.type = "hidden";
+      destInput.name = "image[]";
+      destInput.value = dataURL;
+      // Append image to form as hidden input
+      document.forms[0].appendChild(destInput);
+      // Preview image
+      var destImg = document.createElement("img");
+      destImg.src = dataURL;
+      document.body.appendChild(destImg);
+    })
+  }
+}
+```

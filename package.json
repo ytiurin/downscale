@@ -7,12 +7,13 @@
     "type": "git",
     "url": "https://github.com/ytiurin/downscale.git"
   },
+  "homepage": "https://github.com/ytiurin/downscale",
   "scripts": {
-    "build": "make downscale.js",
+    "build": "make build",
     "start": "http-server ./ -c-1",
     "test": "npm run build && jest"
   },
-  "author": "Eugene Tiurin",
+  "author": {"name" : "Eugene Tiurin", "email" : "yevhentiurin@gmail.com"},
   "license": "MIT",
   "main": "./dist/downscale.js",
   "devDependencies": {

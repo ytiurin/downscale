@@ -1,3 +1,9 @@
+/* downscale 1.0.0
+   Better image downscale with canvas.
+   https://github.com/ytiurin/downscale
+   Eugene Tiurin <yevhentiurin@gmail.com>
+   Under MIT license
+*/
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([], factory);

@@ -109,12 +109,12 @@ Examples
 --------
 ### Using file input
 This is just a simple code snippet which uses the form file input as a source of the image data.
-### HTML
+#### HTML
 ```html
 <input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
 <form method="post"><input type="submit"/></form>
 ```
-### Javascript
+#### Javascript
 ```javascript
 function filesChanged(files)
 {
@@ -138,11 +138,11 @@ function filesChanged(files)
 
 ### Working with `<img>`
 Processing an `<img>` element is quite simple. The function will wait for image load, so you don't have to worry about it.
-### HTML
+#### HTML
 ```html
 <img id="source" src="../public/1.jpg" />
 ```
-### Javascript
+#### Javascript
 ```javascript
 var sourceImg = document.getElementById('source');
 
@@ -157,7 +157,9 @@ then(function(dataURL) {
 ### Using URL string
 The function can upload the source image from the given URL with no extra code needed. Keep in mind that the image should share [origin](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin "The Origin request header indicates where a fetch originates from. It doesn't include any path information, but only the server name. It is sent with CORS requests, as well as with POST requests. It is similar to the Referer header, but, unlike this header, it doesn't disclose the whole path.") with the code file.
 ```javascript
-downscale("/public/1.jpg", 400, 400).
+var imageURL = "/public/1.jpg";
+
+downscale(imageURL, 400, 400).
 then(function(dataURL) {
   var destImg = document.createElement('img');
   destImg.src = dataURL;

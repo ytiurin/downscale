@@ -11,6 +11,7 @@
   "scripts": {
     "build": "make build",
     "postpublish": "make postpublish",
+    "prepublish": "npm run build",
     "pretest": "npm run build",
     "start": "http-server ./ -c-1",
     "test": "jest"

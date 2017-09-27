@@ -1,5 +1,28 @@
+function createTiming(enabled, source, destWidth, destHeight)
+{
+  var start  = new Date
+  var timing = {}
+  var prev   = start
+  var n      = "01"
+
+  return {
+    mark: enabled ? function(name) {
+      name = `${n}. ${name || "..."}`
+      timing[name] = { "time (ms)": (new Date) - prev }
+      prev = new Date
+      n = `0${(n >> 0) + 1}`.substr(-2)
+    } : new Function,
+    finish: enabled ? function() {
+      timing[`${n}. TOTAL`] = { "time (ms)": (new Date) - start }
+      console.log("IMAGE SOURCE:", source)
+      console.log("DOWNSCALE TO:", `${destWidth}x${destHeight}`)
+      console.table(timing)
+    } : new Function
+  }
+}
+
 function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
-  destHeight, options)
+  destHeight, options, timing)
 {
   if (!performCanvasDownscale.canvas) {
     performCanvasDownscale.canvas = document.createElement('canvas')
@@ -11,8 +34,13 @@ function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
   canvas.width  = sourceWidth
   canvas.height = sourceHeight
 
+  timing.mark()
   ctx.drawImage(source, 0, 0)
+  timing.mark("DRAW IMAGE ON CANVAS")
+
+  timing.mark()
   var sourceImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  timing.mark("GET IMAGE DATA")
 
   var origSourceWidth  = sourceWidth
   var origSourceHeight = sourceHeight
@@ -30,48 +58,50 @@ function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
   var sourceX = options.sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0
   var sourceY = options.sourceY || (origSourceHeight - sourceHeight) / 2 >> 0
 
+  timing.mark()
   var processedImageData = downsample(sourceImageData, destWidth, destHeight,
     sourceX, sourceY, sourceWidth, sourceHeight)
+  timing.mark("DOWNSAMPLE")
 
   canvas.width  = processedImageData.width
   canvas.height = processedImageData.height
 
+  timing.mark()
   ctx.putImageData(processedImageData, 0, 0)
+  timing.mark("PUT IMAGE DATA")
 
   if (options.returnCanvas) {
     return canvas
   }
-  return canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
+  timing.mark()
+  var dataURL = canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
     options.quality || .85)
+  timing.mark("PRODUCE DATA URL")
+
+  return dataURL
 }
 
-function waitArrayBufferLoad(source)
+function waitArrayBufferLoad(source, afterBufferLoad)
 {
-  return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest
+  var xhr = new XMLHttpRequest
 
-    xhr.open("GET", source)
-    xhr.responseType = "arraybuffer"
+  xhr.open("GET", source)
+  xhr.responseType = "arraybuffer"
 
-    xhr.addEventListener("load", function() {
-      resolve(this.response)
-    })
-
-    xhr.send()
+  xhr.addEventListener("load", function() {
+    afterBufferLoad(this.response)
   })
+
+  xhr.send()
 }
 
-function waitImgLoad(img)
+function waitImgLoad(img, afterImageLoaded)
 {
   if (img.complete) {
-    return Promise.resolve()
+    afterImageLoaded()
   }
   else {
-    return new Promise(function(resolve, reject) {
-      img.addEventListener("load", function() {
-        resolve()
-      })
-    })
+    img.addEventListener("load", afterImageLoaded)
   }
 }
 
@@ -121,38 +151,55 @@ function validateArguments(args)
   }
 }
 
-function downscale(source, destWidth, destHeight, options)
+function downscale(source, destWidth, destHeight, options, afterScale)
 {
+  var timing = createTiming(options && options.debug || false,
+    source, destWidth, destHeight)
+
   var err = validateArguments(arguments)
   if (err instanceof TypeError) {
     return Promise.reject(err)
   }
 
-  options = options || {}
+  if (options instanceof Function) {
+    afterScale = options
+    options    = {}
+  }
+  options    = options    || {}
+  afterScale = afterScale || new Function
+
   var URL = window.URL || window.webkitURL
 
   return new Promise(function(resolve, reject) {
     function resolveDownscale(source, sourceWidth, sourceHeight) {
-      resolve(
-        performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
-          destHeight, options))
+      var result = performCanvasDownscale(source, sourceWidth, sourceHeight,
+        destWidth, destHeight, options, timing)
+
+      afterScale(result)
+      resolve(result)
+
+      timing.mark("RESOLVE")
+      timing.finish()
     }
 
     switch (detectSourceType(source)) {
 
       case "File":
         var sourceImg = document.createElement("img")
+        timing.mark()
         sourceImg.src = URL.createObjectURL(source)
-        waitImgLoad(sourceImg).
-        then(function() {
+        timing.mark("READ FILE")
+        waitImgLoad(sourceImg, function() {
+          timing.mark("LOAD IMAGE")
           resolveDownscale(sourceImg, sourceImg.naturalWidth,
             sourceImg.naturalHeight)
         })
         break
 
       case "HTMLImageElement":
-        waitImgLoad(source).
-        then(function() {
+        timing.mark()
+        waitImgLoad(source, function() {
+          timing.mark("LOAD IMAGE")
           resolveDownscale(source, source.naturalWidth, source.naturalHeight)
         })
         break
@@ -165,14 +212,16 @@ function downscale(source, destWidth, destHeight, options)
         break
 
       case "URL":
-        waitArrayBufferLoad(source).
-        then(function(arrayBuffer) {
+        timing.mark()
+        waitArrayBufferLoad(source, function(arrayBuffer) {
+          timing.mark("LOAD ARRAY BUFFER")
           var arrayBufferView = new Uint8Array(arrayBuffer)
           var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
           var sourceImg = document.createElement("img")
           sourceImg.src = URL.createObjectURL(blob)
-          waitImgLoad(sourceImg).
-          then(function() {
+          timing.mark()
+          waitImgLoad(sourceImg, function() {
+            timing.mark("LOAD IMAGE")
             resolveDownscale(sourceImg, sourceImg.naturalWidth,
               sourceImg.naturalHeight)
           })

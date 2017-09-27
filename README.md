@@ -19,7 +19,7 @@ This function uses the technique, proposed by [Paul Rouget](http://paulrouget.co
 
 Also, the usage of [`Math.round()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round "The Math.round() function returns the value of a number rounded to the nearest integer.") method is avoided in favour of [Bitwise operators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators "Bitwise operators treat their operands as a sequence of 32 bits (zeroes and ones), rather than as decimal, hexadecimal, or octal numbers. For example, the decimal number nine has a binary representation of 1001. Bitwise operators perform their operations on such binary representations, but they return standard JavaScript numerical values."), giving a significant boost in performance in some browsers.
 
-Sometimes the [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can delay the resolve to more then 1 second. If you need to get the result as early as possible, you should be using `afterScaleDone` parameter. It is a callback function that executes after the downscaling is done.  
+Sometimes the [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can delay the resolve to more then 1 second. If you need to get the result as early as possible, you should be using `onComplete` parameter. It is a callback function that executes after the downscaling is done.  
 
 Image cropping
 --------------
@@ -36,8 +36,8 @@ npm install downscale
 Syntax
 ------
 ```javascript
-Promise<DOMString> downscale(source, width, height[, options[, afterScaleDone]]);
-Promise<DOMString> downscale(source, width, height[, afterScaleDone]);
+Promise<DOMString> downscale(source, width, height[, options[, onComplete]]);
+Promise<DOMString> downscale(source, width, height[, onComplete]);
 ```
 
 ### Parameters
@@ -104,7 +104,7 @@ Promise<DOMString> downscale(source, width, height[, afterScaleDone]);
     </ul>
   </dd>
   
-  <dt>afterScaleDone <sup>(optional)</sup></dt>
+  <dt>onComplete <sup>(optional)</sup></dt>
   <dd>A function that executes after the downscaling is finished. First argument contains the resulting image in <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/data_URIs" title="URLs prefixed with the data: scheme, allow content creators to embed small files inline in documents.">data URI</a> format.</dd>
 </dl>
 
@@ -167,6 +167,17 @@ var imageURL = "/public/1.jpg";
 
 downscale(imageURL, 400, 400).
 then(function(dataURL) {
+  var destImg = document.createElement('img');
+  destImg.src = dataURL;
+  document.body.appendChild(destImg);
+})
+```
+
+### Using callback function insted of [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.")
+Sometimes `Promise` can cause a significant delay from time of resolving to time of calling the resolve callback. You can pass a callback function that executes right after the result is produced.
+```javascript
+downscale(imageURL, 400, 400,
+function(dataURL) {
   var destImg = document.createElement('img');
   destImg.src = dataURL;
   document.body.appendChild(destImg);

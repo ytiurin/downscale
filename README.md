@@ -11,7 +11,7 @@ While other image resizing libraries are based on complex interpolation algorith
 
 On the other hand, browsers implement very fast [`HTMLCanvasElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement "The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements.") downsampling, when the pixel from source position is directly transfered to the destination position, loosing all the neighbouring pixels information. The resulting image may often look very noisy.
 
-To resolve this problem, the proposed function does simple [linear downsampling](https://en.wikipedia.org/wiki/Decimation_(signal_processing) "In digital signal processing, decimation is the process of reducing the sampling rate of a signal."), producing preferable results with relatively small processing time.
+To resolve this problem, the proposed function does simple average downsampling, producing preferable results with relatively small processing time.
 
 Performance
 -----------
@@ -166,6 +166,12 @@ then(function(dataURL) {
   document.body.appendChild(destImg);
 })
 ```
+
+Other libraries
+---------------
+Check out other great in-browser image resizing libraries:
+- [pica](https://github.com/nodeca/pica "Resize image in browser with high quality and high speed.") is great image resizing tool with support of [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API "Web Workers makes it possible to run a script operation in background thread separate from the main execution thread of a web application. The advantage of this is that laborious processing can be performed in a separate thread, allowing the main (usually the UI) thread to run without being blocked/slowed down.") and [WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly "WebAssembly is a new type of code that can be run in modern web browsers — it is a low-level assembly-like language with a compact binary format that runs with near-native performance and provides languages such as C/C++ with a compilation target so that they can run on the web. It is also designed to run alongside JavaScript, allowing both to work together.") from the box
+- [Hermite-resize](https://github.com/viliusle/Hermite-resize "Canvas image resize/resample using Hermite filter with JavaScript.") does image resize/resample using Hermite filter and [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API "Web Workers makes it possible to run a script operation in background thread separate from the main execution thread of a web application. The advantage of this is that laborious processing can be performed in a separate thread, allowing the main (usually the UI) thread to run without being blocked/slowed down.")
 
 License
 -------

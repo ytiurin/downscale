@@ -151,7 +151,7 @@ function validateArguments(args)
   }
 }
 
-function downscale(source, destWidth, destHeight, options, afterScale)
+function downscale(source, destWidth, destHeight, options, onComplete)
 {
   var timing = createTiming(options && options.debug || false,
     source, destWidth, destHeight)
@@ -162,11 +162,11 @@ function downscale(source, destWidth, destHeight, options, afterScale)
   }
 
   if (options instanceof Function) {
-    afterScale = options
+    onComplete = options
     options    = {}
   }
   options    = options    || {}
-  afterScale = afterScale || new Function
+  onComplete = onComplete || new Function
 
   var URL = window.URL || window.webkitURL
 
@@ -175,7 +175,7 @@ function downscale(source, destWidth, destHeight, options, afterScale)
       var result = performCanvasDownscale(source, sourceWidth, sourceHeight,
         destWidth, destHeight, options, timing)
 
-      afterScale(result)
+      onComplete(result)
       resolve(result)
 
       timing.mark("RESOLVE")

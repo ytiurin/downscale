@@ -174,7 +174,7 @@ then(function(dataURL) {
 ```
 
 ### Using callback function instead of `Promise`
-Sometimes [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can cause a significant delay from time of resolving to time of calling the resolve callback. You can pass a callback function that executes right after the result is produced.
+Sometimes [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can cause a significant time delay from the moment of resolving to actually calling the resolve callback function. You can pass a callback function that executes right after the result is produced.
 ```javascript
 downscale(imageURL, 400, 400,
 function(dataURL) {

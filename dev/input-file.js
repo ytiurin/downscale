@@ -1,8 +1,8 @@
 function filesChanged(files)
 {
   for (var i = 0; i < files.length; i++) {
-    downscale(files[i], 400, 400, {debug: 1},
-    function(dataURL) {
+    downscale(files[i], 400, 400, {debug: 1}).
+    then(function(dataURL) {
       var destInput = document.createElement("input");
       destInput.type = "hidden";
       destInput.name = "image[]";

@@ -21,26 +21,61 @@ function createTiming(enabled, source, destWidth, destHeight)
   }
 }
 
-function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
-  destHeight, options, timing)
+function createCache()
 {
-  if (!performCanvasDownscale.canvas) {
-    performCanvasDownscale.canvas = document.createElement('canvas')
+  var keys       = []
+  var values     = []
+  var subscribes = []
+  var PENDING    = new Object
+
+  return {
+    createSetter: function(key) {
+      if (this.get(key)) {
+        return
+      }
+      var cacheInd = keys.push(key) - 1
+      values.push(PENDING)
+      subscribes.push([])
+
+      return function(value) {
+        values[cacheInd] = value
+        subscribes[cacheInd] = subscribes[cacheInd].reduce(function(r, resolve) {
+          resolve(value)
+        }, [])
+      }
+    },
+    get: function(key, resolve) {
+      var cacheInd = keys.indexOf(key)
+      if (!~cacheInd) {
+        return
+      }
+      if (values[cacheInd] === PENDING) {
+        subscribes[cacheInd].push(resolve)
+        return
+      }
+      resolve(values[cacheInd])
+    },
+    has: function(key) {
+      return !!~keys.indexOf(key)
+    }
   }
+}
 
-  var canvas = performCanvasDownscale.canvas
-  var ctx    = canvas.getContext("2d")
-
+function getImageData(canvas, img, sourceWidth, sourceHeight)
+{
   canvas.width  = sourceWidth
   canvas.height = sourceHeight
 
-  timing.mark()
-  ctx.drawImage(source, 0, 0)
-  timing.mark("DRAW IMAGE ON CANVAS")
+  var ctx = canvas.getContext("2d")
+  ctx.drawImage(img, 0, 0)
 
-  timing.mark()
-  var sourceImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  timing.mark("GET IMAGE DATA")
+  return ctx.getImageData(0, 0, sourceWidth, sourceHeight)
+}
+
+function scaleImageData(imageData, destWidth, destHeight, sourceX, sourceY)
+{
+  var sourceWidth  = imageData.width
+  var sourceHeight = imageData.height
 
   var origSourceWidth  = sourceWidth
   var origSourceHeight = sourceHeight
@@ -55,33 +90,38 @@ function performCanvasDownscale(source, sourceWidth, sourceHeight, destWidth,
     sourceWidth = sourceHeight * destRatio
   }
 
-  var sourceX = options.sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0
-  var sourceY = options.sourceY || (origSourceHeight - sourceHeight) / 2 >> 0
+  var sourceX = sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0
+  var sourceY = sourceY || (origSourceHeight - sourceHeight) / 2 >> 0
 
-  timing.mark()
-  var processedImageData = downsample(sourceImageData, destWidth, destHeight,
-    sourceX, sourceY, sourceWidth, sourceHeight)
-  timing.mark("DOWNSAMPLE")
-
-  canvas.width  = processedImageData.width
-  canvas.height = processedImageData.height
-
-  timing.mark()
-  ctx.putImageData(processedImageData, 0, 0)
-  timing.mark("PUT IMAGE DATA")
-
-  if (options.returnCanvas) {
-    return canvas
-  }
-  timing.mark()
-  var dataURL = canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
-    options.quality || .85)
-  timing.mark("PRODUCE DATA URL")
-
-  return dataURL
+  return downsample(imageData, destWidth, destHeight, sourceX, sourceY,
+    sourceWidth, sourceHeight)
 }
 
-function waitArrayBufferLoad(source, afterBufferLoad)
+function produceResult(canvas, imageData, options, callback)
+{
+  canvas.width  = imageData.width
+  canvas.height = imageData.height
+
+  var ctx = canvas.getContext("2d")
+  ctx.putImageData(imageData, 0, 0)
+
+  if (options.returnCanvas) {
+    callback(canvas)
+    return
+  }
+
+  if (options.returnBlob) {
+    canvas.toBlob(callback, `image/${options.imageType || "jpeg"}`, options.quality || .85)
+    return
+  }
+
+  var dataURL = canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
+    options.quality || .85)
+
+  callback(dataURL)
+}
+
+function loadArrayBuffer(source, callback)
 {
   var xhr = new XMLHttpRequest
 
@@ -89,33 +129,29 @@ function waitArrayBufferLoad(source, afterBufferLoad)
   xhr.responseType = "arraybuffer"
 
   xhr.addEventListener("load", function() {
-    afterBufferLoad(this.response)
+    callback(this.response)
   })
 
   xhr.send()
 }
 
-function waitImgLoad(img, afterImageLoaded)
+function loadImg(img, callback)
 {
   if (img.complete) {
-    afterImageLoaded()
+    callback()
   }
   else {
-    img.addEventListener("load", afterImageLoaded)
+    img.addEventListener("load",  callback)
   }
 }
 
-function waitVideoLoad(video)
+function loadVideo(video, callback)
 {
   if (video.readyState > 1) {
-    return Promise.resolve()
+    callback()
   }
   else {
-    return new Promise(function(resolve, reject) {
-      video.addEventListener("loadeddata", function() {
-        resolve()
-      })
-    })
+    video.addEventListener("loadeddata", callback)
   }
 }
 
@@ -151,7 +187,7 @@ function validateArguments(args)
   }
 }
 
-function downscale(source, destWidth, destHeight, options, onComplete)
+function downscale(source, destWidth, destHeight, options)
 {
   var timing = createTiming(options && options.debug || false,
     source, destWidth, destHeight)
@@ -161,25 +197,56 @@ function downscale(source, destWidth, destHeight, options, onComplete)
     return Promise.reject(err)
   }
 
-  if (options instanceof Function) {
-    onComplete = options
-    options    = {}
-  }
-  options    = options    || {}
-  onComplete = onComplete || new Function
+  options = options || {}
 
+  downscale.canvas = downscale.canvas || document.createElement("canvas")
+  downscale.cache  = downscale.cache  || createCache()
+
+  var canvas = downscale.canvas
+  var cache  = downscale.cache
+
+  if (cache.has(source)) {
+    timing.mark()
+    return new Promise(function(resolve, reject) {
+      cache.get(source,
+      function(sourceImageData) {
+        timing.mark("PENDING CACHE")
+        var destImageData = scaleImageData(sourceImageData, destWidth,
+          destHeight, options.sourceX, options.sourceY)
+        timing.mark("DOWNSCALE")
+
+        produceResult(canvas, destImageData, options,
+        function(result) {
+          timing.mark("PRODUCE RESULT")
+          resolve(result)
+          timing.finish()
+        })
+      })
+    })
+  }
+
+  var setCache = cache.createSetter(source)
   var URL = window.URL || window.webkitURL
 
   return new Promise(function(resolve, reject) {
-    function resolveDownscale(source, sourceWidth, sourceHeight) {
-      var result = performCanvasDownscale(source, sourceWidth, sourceHeight,
-        destWidth, destHeight, options, timing)
 
-      onComplete(result)
-      resolve(result)
+    var scaleImgResolve = function(img, width, height) {
+      timing.mark()
+      var imageData = getImageData(canvas, img, width, height)
+      timing.mark("GET IMAGE DATA")
 
-      timing.mark("RESOLVE")
-      timing.finish()
+      var destImageData = scaleImageData(imageData, destWidth, destHeight,
+        options.sourceX, options.sourceY)
+      timing.mark("DOWNSCALE")
+
+      produceResult(canvas, destImageData, options,
+      function(result) {
+        timing.mark("PRODUCE RESULT")
+        resolve(result)
+        timing.finish()
+
+        setCache(imageData)
+      })
     }
 
     switch (detectSourceType(source)) {
@@ -189,40 +256,44 @@ function downscale(source, destWidth, destHeight, options, onComplete)
         timing.mark()
         sourceImg.src = URL.createObjectURL(source)
         timing.mark("READ FILE")
-        waitImgLoad(sourceImg, function() {
+        loadImg(sourceImg,
+        function() {
           timing.mark("LOAD IMAGE")
-          resolveDownscale(sourceImg, sourceImg.naturalWidth,
+          scaleImgResolve(sourceImg, sourceImg.naturalWidth,
             sourceImg.naturalHeight)
         })
         break
 
       case "HTMLImageElement":
         timing.mark()
-        waitImgLoad(source, function() {
+        loadImg(source,
+        function() {
           timing.mark("LOAD IMAGE")
-          resolveDownscale(source, source.naturalWidth, source.naturalHeight)
+          scaleImgResolve(source, source.naturalWidth, source.naturalHeight)
         })
         break
 
       case "HTMLVideoElement":
-        waitVideoLoad(source).
-        then(function() {
-          resolveDownscale(source, source.videoWidth, source.videoHeight)
+        loadVideo(source,
+        function() {
+          scaleImgResolve(source, source.videoWidth, source.videoHeight)
         })
         break
 
       case "URL":
         timing.mark()
-        waitArrayBufferLoad(source, function(arrayBuffer) {
+        loadArrayBuffer(source,
+        function(arrayBuffer) {
           timing.mark("LOAD ARRAY BUFFER")
           var arrayBufferView = new Uint8Array(arrayBuffer)
           var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
           var sourceImg = document.createElement("img")
           sourceImg.src = URL.createObjectURL(blob)
           timing.mark()
-          waitImgLoad(sourceImg, function() {
+          loadImg(sourceImg,
+          function() {
             timing.mark("LOAD IMAGE")
-            resolveDownscale(sourceImg, sourceImg.naturalWidth,
+            scaleImgResolve(sourceImg, sourceImg.naturalWidth,
               sourceImg.naturalHeight)
           })
         })

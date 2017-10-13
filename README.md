@@ -19,8 +19,6 @@ This function uses the technique, proposed by [Paul Rouget](http://paulrouget.co
 
 Also, the usage of [`Math.round()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round "The Math.round() function returns the value of a number rounded to the nearest integer.") method is avoided in favour of [Bitwise operators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators "Bitwise operators treat their operands as a sequence of 32 bits (zeroes and ones), rather than as decimal, hexadecimal, or octal numbers. For example, the decimal number nine has a binary representation of 1001. Bitwise operators perform their operations on such binary representations, but they return standard JavaScript numerical values."), giving a significant boost in performance in some browsers.
 
-Sometimes the [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can delay the resolve to more then 1 second. If you need to get the result as early as possible, you should be using `onComplete` parameter. It is a callback function that executes after the downscaling is done.  
-
 Image cropping
 --------------
 Image cropping is very often used in pair with resizing, but both can be very naturally combined. As we don't need to iterate through pixels in cropped areas, the function does both downscaling and cropping in range of the same processing loop. This saves some memory and processing time.
@@ -36,8 +34,7 @@ npm install downscale
 Syntax
 ------
 ```javascript
-Promise<DOMString> downscale(source, width, height[, options[, onComplete]]);
-Promise<DOMString> downscale(source, width, height[, onComplete]);
+Promise<DOMString> downscale(source, width, height[, options]);
 ```
 
 ### Parameters
@@ -85,6 +82,12 @@ Promise<DOMString> downscale(source, width, height[, onComplete]);
       </li>
       <li>
         <dl>
+          <dt>returnBlob</dt>
+          <dd>A <a title="The Boolean object is an object wrapper for a boolean value." href="/en-US/docs/Web/API/Boolean"><code>Boolean</code></a> indicating if the returned <a href="https://developer.mozilla.org/en-US/docs/Web/API/Promise" title="The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future."><code>Promise</code></a> should resolve with <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob" title="A Blob object represents a file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system."><code>Blob</code></a> object representing the resulting image. The default value is <code>false</code>.</dd>
+        </dl>
+      </li>
+      <li>
+        <dl>
           <dt>returnCanvas</dt>
           <dd>A <a title="The Boolean object is an object wrapper for a boolean value." href="/en-US/docs/Web/API/Boolean"><code>Boolean</code></a> indicating if the returned <a href="https://developer.mozilla.org/en-US/docs/Web/API/Promise" title="The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future."><code>Promise</code></a> should resolve with <a title="The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements. The HTMLCanvasElement interface also inherits the properties and methods of the HTMLElement interface." href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement"><code>HTMLCanvasElement</code></a> containing the resulting image. The default value is <code>false</code>.</dd>
         </dl>
@@ -103,9 +106,6 @@ Promise<DOMString> downscale(source, width, height[, onComplete]);
       </li>
     </ul>
   </dd>
-  
-  <dt>onComplete <sup>(optional)</sup></dt>
-  <dd>A function that executes after the downscaling is finished. First argument contains the resulting image in <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/data_URIs" title="URLs prefixed with the data: scheme, allow content creators to embed small files inline in documents.">data URI</a> format.</dd>
 </dl>
 
 ### Return value
@@ -167,17 +167,6 @@ var imageURL = "/public/1.jpg";
 
 downscale(imageURL, 400, 400).
 then(function(dataURL) {
-  var destImg = document.createElement('img');
-  destImg.src = dataURL;
-  document.body.appendChild(destImg);
-})
-```
-
-### Using callback function instead of `Promise`
-Sometimes [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Promise interface represents a proxy for a value not necessarily known at its creation time. It allows you to associate handlers to an asynchronous action's eventual success or failure. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise of having a value at some point in the future.") can cause a significant time delay from the moment of resolving to actually calling the resolve callback function. You can pass a callback function that executes right after the result is produced.
-```javascript
-downscale(imageURL, 400, 400,
-function(dataURL) {
   var destImg = document.createElement('img');
   destImg.src = dataURL;
   document.body.appendChild(destImg);

@@ -14,6 +14,23 @@
     }
 }(this, function () {
 
+function resizeWithCanvas(canvas, source, destWidth, destHeight, sourceX,
+  sourceY, sourceWidth, sourceHeight)
+{
+  var canvas = document.createElement("canvas")
+  canvas.width  = destWidth
+  canvas.height = destHeight
+
+  var scaleFactorX = destWidth  / sourceWidth
+  var scaleFactorY = destHeight / sourceHeight
+
+  var ctx = canvas.getContext("2d")
+  ctx.scale( scaleFactorX, scaleFactorY )
+  ctx.drawImage(source, 0, 0)
+  ctx.scale(1, 1)
+
+  return canvas
+}
 function round(val)
 {
   return (val + 0.5) << 0
@@ -145,11 +162,20 @@ function getImageData(canvas, img, sourceWidth, sourceHeight)
   return ctx.getImageData(0, 0, sourceWidth, sourceHeight)
 }
 
-function scaleImageData(imageData, destWidth, destHeight, sourceX, sourceY)
+function putImageData(canvas, imageData)
 {
-  var sourceWidth  = imageData.width
-  var sourceHeight = imageData.height
+  canvas.width  = imageData.width
+  canvas.height = imageData.height
 
+  var ctx = canvas.getContext("2d")
+  ctx.putImageData(imageData, 0, 0)
+
+  return canvas
+}
+
+function remapDimensions(destWidth, destHeight, sourceX, sourceY, sourceWidth,
+  sourceHeight)
+{
   var origSourceWidth  = sourceWidth
   var origSourceHeight = sourceHeight
 
@@ -166,18 +192,18 @@ function scaleImageData(imageData, destWidth, destHeight, sourceX, sourceY)
   var sourceX = sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0
   var sourceY = sourceY || (origSourceHeight - sourceHeight) / 2 >> 0
 
-  return downsample(imageData, destWidth, destHeight, sourceX, sourceY,
-    sourceWidth, sourceHeight)
+  return {
+    destWidth    : destWidth,
+    destHeight   : destHeight,
+    sourceX      : sourceX,
+    sourceY      : sourceY,
+    sourceWidth  : sourceWidth,
+    sourceHeight : sourceHeight
+  }
 }
 
-function produceResult(canvas, imageData, options, callback)
+function produceResult(canvas, options, callback)
 {
-  canvas.width  = imageData.width
-  canvas.height = imageData.height
-
-  var ctx = canvas.getContext("2d")
-  ctx.putImageData(imageData, 0, 0)
-
   if (options.returnCanvas) {
     callback(canvas)
     return
@@ -282,13 +308,18 @@ function downscale(source, destWidth, destHeight, options)
     timing.mark()
     return new Promise(function(resolve, reject) {
       cache.get(source,
-      function(sourceImageData) {
+      function(imageData) {
         timing.mark("PENDING CACHE")
-        var destImageData = scaleImageData(sourceImageData, destWidth,
-          destHeight, options.sourceX, options.sourceY)
+        var dims = remapDimensions(destWidth, destHeight, options.sourceX,
+          options.sourceY, imageData.width, imageData.height)
+        var destImageData = downsample(imageData, dims.destWidth,
+          dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
+          dims.sourceHeight)
         timing.mark("DOWNSCALE")
 
-        produceResult(canvas, destImageData, options,
+        canvas = putImageData(canvas, destImageData)
+
+        produceResult(canvas, options,
         function(result) {
           timing.mark("PRODUCE RESULT")
           resolve(result)
@@ -303,16 +334,30 @@ function downscale(source, destWidth, destHeight, options)
 
   return new Promise(function(resolve, reject) {
 
-    var scaleImgResolve = function(img, width, height) {
-      timing.mark()
-      var imageData = getImageData(canvas, img, width, height)
-      timing.mark("GET IMAGE DATA")
+    var scaleSourceResolve = function(source, width, height) {
+      var dims = remapDimensions(destWidth, destHeight, options.sourceX,
+        options.sourceY, width, height)
 
-      var destImageData = scaleImageData(imageData, destWidth, destHeight,
-        options.sourceX, options.sourceY)
-      timing.mark("DOWNSCALE")
+      if (dims.sourceWidth / dims.destWidth >= 2) {
+        timing.mark()
+        var imageData = getImageData(canvas, source, width, height)
+        timing.mark("GET IMAGE DATA")
 
-      produceResult(canvas, destImageData, options,
+        var destImageData = downsample(imageData, dims.destWidth,
+          dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
+          dims.sourceHeight)
+        timing.mark("DOWNSCALE")
+
+        canvas = putImageData(canvas, destImageData)
+      }
+      else {
+        canvas = resizeWithCanvas(canvas, source, dims.destWidth,
+          dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
+          dims.sourceHeight)
+        timing.mark("RESIZE WITH CANVAS")
+      }
+
+      produceResult(canvas, options,
       function(result) {
         timing.mark("PRODUCE RESULT")
         resolve(result)
@@ -332,7 +377,7 @@ function downscale(source, destWidth, destHeight, options)
         loadImg(sourceImg,
         function() {
           timing.mark("LOAD IMAGE")
-          scaleImgResolve(sourceImg, sourceImg.naturalWidth,
+          scaleSourceResolve(sourceImg, sourceImg.naturalWidth,
             sourceImg.naturalHeight)
         })
         break
@@ -342,14 +387,14 @@ function downscale(source, destWidth, destHeight, options)
         loadImg(source,
         function() {
           timing.mark("LOAD IMAGE")
-          scaleImgResolve(source, source.naturalWidth, source.naturalHeight)
+          scaleSourceResolve(source, source.naturalWidth, source.naturalHeight)
         })
         break
 
       case "HTMLVideoElement":
         loadVideo(source,
         function() {
-          scaleImgResolve(source, source.videoWidth, source.videoHeight)
+          scaleSourceResolve(source, source.videoWidth, source.videoHeight)
         })
         break
 
@@ -366,7 +411,7 @@ function downscale(source, destWidth, destHeight, options)
           loadImg(sourceImg,
           function() {
             timing.mark("LOAD IMAGE")
-            scaleImgResolve(sourceImg, sourceImg.naturalWidth,
+            scaleSourceResolve(sourceImg, sourceImg.naturalWidth,
               sourceImg.naturalHeight)
           })
         })

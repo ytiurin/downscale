@@ -248,7 +248,8 @@ function downscale(source, destWidth, destHeight, options)
       var dims = remapDimensions(destWidth, destHeight, options.sourceX,
         options.sourceY, width, height)
 
-      if (dims.sourceWidth / dims.destWidth >= 2) {
+      if (dims.sourceWidth  / dims.destWidth  >= 2 &&
+          dims.sourceHeight / dims.destHeight >= 2) {
         timing.mark()
         var imageData = getImageData(canvas, source, width, height)
         timing.mark("GET IMAGE DATA")

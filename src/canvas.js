@@ -9,9 +9,9 @@ function resizeWithCanvas(canvas, source, destWidth, destHeight, sourceX,
   var scaleFactorY = destHeight / sourceHeight
 
   var ctx = canvas.getContext("2d")
-  ctx.scale( scaleFactorX, scaleFactorY )
-  ctx.drawImage(source, 0, 0)
-  ctx.scale(1, 1)
+  ctx.drawImage(source,
+    sourceX, sourceY, sourceWidth, sourceHeight,
+    0, 0, destWidth, destHeight)
 
   return canvas
 }

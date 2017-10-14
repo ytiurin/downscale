@@ -120,7 +120,8 @@ function produceResult(canvas, options, callback)
   }
 
   if (options.returnBlob) {
-    canvas.toBlob(callback, `image/${options.imageType || "jpeg"}`, options.quality || .85)
+    canvas.toBlob(callback, `image/${options.imageType || "jpeg"}`,
+      options.quality || .85)
     return
   }
 
@@ -208,6 +209,12 @@ function downscale(source, destWidth, destHeight, options)
 
   options = options || {}
 
+  var resolveResult, rejectResult
+  var result = new Promise(function(resolve, reject) {
+    resolveResult = resolve
+    rejectResult  = reject
+  })
+
   downscale.canvas = downscale.canvas || document.createElement("canvas")
   downscale.cache  = downscale.cache  || createCache()
 
@@ -216,44 +223,18 @@ function downscale(source, destWidth, destHeight, options)
 
   if (cache.has(source)) {
     timing.mark()
-    return new Promise(function(resolve, reject) {
-      cache.get(source,
-      function(imageData) {
-        timing.mark("PENDING CACHE")
-        var dims = remapDimensions(destWidth, destHeight, options.sourceX,
-          options.sourceY, imageData.width, imageData.height)
-        var destImageData = downsample(imageData, dims.destWidth,
-          dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
-          dims.sourceHeight)
-        timing.mark("DOWNSCALE")
+    cache.get(source,
+    function(cacheData) {
+      timing.mark("PENDING CACHE")
+      var img = cacheData[0]
+      var imageData = cacheData[1]
 
-        canvas = putImageData(canvas, destImageData)
-
-        produceResult(canvas, options,
-        function(result) {
-          timing.mark("PRODUCE RESULT")
-          resolve(result)
-          timing.finish()
-        })
-      })
-    })
-  }
-
-  var setCache = cache.createSetter(source)
-  var URL = window.URL || window.webkitURL
-
-  return new Promise(function(resolve, reject) {
-
-    var scaleSourceResolve = function(source, width, height) {
       var dims = remapDimensions(destWidth, destHeight, options.sourceX,
-        options.sourceY, width, height)
+        options.sourceY, imageData.width, imageData.height)
 
       if (dims.sourceWidth  / dims.destWidth  >= 2 &&
           dims.sourceHeight / dims.destHeight >= 2) {
         timing.mark()
-        var imageData = getImageData(canvas, source, width, height)
-        timing.mark("GET IMAGE DATA")
-
         var destImageData = downsample(imageData, dims.destWidth,
           dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
           dims.sourceHeight)
@@ -262,7 +243,7 @@ function downscale(source, destWidth, destHeight, options)
         canvas = putImageData(canvas, destImageData)
       }
       else {
-        canvas = resizeWithCanvas(canvas, source, dims.destWidth,
+        canvas = resizeWithCanvas(canvas, img, dims.destWidth,
           dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
           dims.sourceHeight)
         timing.mark("RESIZE WITH CANVAS")
@@ -271,62 +252,106 @@ function downscale(source, destWidth, destHeight, options)
       produceResult(canvas, options,
       function(result) {
         timing.mark("PRODUCE RESULT")
-        resolve(result)
+        resolveResult(result)
         timing.finish()
-
-        setCache(imageData)
       })
+    })
+
+    return result
+  }
+
+  if (detectSourceType(source) !== "HTMLVideoElement") {
+    var setCache = cache.createSetter(source)
+  }
+
+  var scaleSourceResolve = function(source, width, height) {
+    var dims = remapDimensions(destWidth, destHeight, options.sourceX,
+      options.sourceY, width, height)
+
+    if (dims.sourceWidth  / dims.destWidth  >= 2 &&
+        dims.sourceHeight / dims.destHeight >= 2) {
+      timing.mark()
+      var imageData = getImageData(canvas, source, width, height)
+      timing.mark("GET IMAGE DATA")
+
+      var destImageData = downsample(imageData, dims.destWidth,
+        dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
+        dims.sourceHeight)
+      timing.mark("DOWNSCALE")
+
+      canvas = putImageData(canvas, destImageData)
+    }
+    else {
+      canvas = resizeWithCanvas(canvas, source, dims.destWidth,
+        dims.destHeight, dims.sourceX, dims.sourceY, dims.sourceWidth,
+        dims.sourceHeight)
+      timing.mark("RESIZE WITH CANVAS")
     }
 
-    switch (detectSourceType(source)) {
+    produceResult(canvas, options,
+    function(result) {
+      timing.mark("PRODUCE RESULT")
+      resolveResult(result)
+      timing.finish()
 
-      case "File":
+      setCache && setCache([source, imageData])
+    })
+  }
+
+  var URL = window.URL || window.webkitURL
+
+  switch (detectSourceType(source)) {
+
+    case "File":
+      var sourceImg = document.createElement("img")
+      timing.mark()
+      sourceImg.src = URL.createObjectURL(source)
+      timing.mark("READ FILE")
+      loadImg(sourceImg,
+      function() {
+        timing.mark("LOAD IMAGE")
+        scaleSourceResolve(sourceImg, sourceImg.naturalWidth,
+          sourceImg.naturalHeight)
+      })
+      break
+
+    case "HTMLImageElement":
+      timing.mark()
+      loadImg(source,
+      function() {
+        timing.mark("LOAD IMAGE")
+        scaleSourceResolve(source, source.naturalWidth, source.naturalHeight)
+      })
+      break
+
+    case "HTMLVideoElement":
+      loadVideo(source,
+      function() {
+        scaleSourceResolve(source, source.videoWidth, source.videoHeight)
+      })
+      break
+
+    case "URL":
+      timing.mark()
+      setTimeout(function() {
+      loadArrayBuffer(source,
+      function(arrayBuffer) {
+        timing.mark("LOAD ARRAY BUFFER")
+        var arrayBufferView = new Uint8Array(arrayBuffer)
+        var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
         var sourceImg = document.createElement("img")
+        sourceImg.src = URL.createObjectURL(blob)
         timing.mark()
-        sourceImg.src = URL.createObjectURL(source)
-        timing.mark("READ FILE")
         loadImg(sourceImg,
         function() {
           timing.mark("LOAD IMAGE")
           scaleSourceResolve(sourceImg, sourceImg.naturalWidth,
             sourceImg.naturalHeight)
         })
-        break
+      })
+      })
+      break
+  }
 
-      case "HTMLImageElement":
-        timing.mark()
-        loadImg(source,
-        function() {
-          timing.mark("LOAD IMAGE")
-          scaleSourceResolve(source, source.naturalWidth, source.naturalHeight)
-        })
-        break
-
-      case "HTMLVideoElement":
-        loadVideo(source,
-        function() {
-          scaleSourceResolve(source, source.videoWidth, source.videoHeight)
-        })
-        break
-
-      case "URL":
-        timing.mark()
-        loadArrayBuffer(source,
-        function(arrayBuffer) {
-          timing.mark("LOAD ARRAY BUFFER")
-          var arrayBufferView = new Uint8Array(arrayBuffer)
-          var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
-          var sourceImg = document.createElement("img")
-          sourceImg.src = URL.createObjectURL(blob)
-          timing.mark()
-          loadImg(sourceImg,
-          function() {
-            timing.mark("LOAD IMAGE")
-            scaleSourceResolve(sourceImg, sourceImg.naturalWidth,
-              sourceImg.naturalHeight)
-          })
-        })
-        break
-    }
-  })
+  return result
 }

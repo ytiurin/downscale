@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head>
+
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+</head><body>
+
+  <input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
+  <button onclick="submitForm()">Submit form data</button>
+
+  <div id="previews"></div>
+
+  <script type="text/javascript" src="../src/downsample.js"></script>
+  <script type="text/javascript" src="../src/canvas.js"></script>
+  <script type="text/javascript" src="../src/downscale.js"></script>
+  <script type="text/javascript" src="form-data.js"></script>
+
+</body></html>

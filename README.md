@@ -142,6 +142,43 @@ function filesChanged(files)
 }
 ```
 
+### Using `FormData` interface
+You can use even cleaner [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData "The FormData interface provides a way to easily construct a set of key/value pairs representing form fields and their values, which can then be easily sent using the XMLHttpRequest.send() method. It uses the same format a form would use if the encoding type were set to \"multipart/form-data\".") interface to send pure `blob` data to the server.
+#### HTML
+```html
+<input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
+<button onclick="submitForm()">Submit form data</button>
+
+<div id="previews"></div>
+```
+#### Javascript
+```javascript
+var formData = new FormData();
+var URL = window.URL || window.webkitURL;
+
+function filesChanged(files)
+{
+  for (let i = 0; i < files.length; i++) {
+    downscale(files[i], 400, 400, {returnBlob: 1}).
+    then(function(blob) {
+      // Append image to form as a blob data
+      formData.append("userpic[]", blob, files[i].name);
+      // Preview image
+      var destImg = document.createElement("img");
+      destImg.src = URL.createObjectURL(blob);
+      document.body.appendChild(destImg);
+    })
+  }
+}
+
+function submitForm()
+{
+  var request = new XMLHttpRequest();
+  request.open("POST", "http://foo.com/submitform.php");
+  request.send(formData);
+}
+```
+
 ### Working with `<img>`
 Processing an `<img>` element is quite simple. The function will wait for image load, so you don't have to worry about it.
 #### HTML

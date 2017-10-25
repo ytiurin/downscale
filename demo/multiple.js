@@ -170,7 +170,7 @@ function addSource(source)
 {
   if (source.name) {
     appendTableRow("&nbsp;", "&nbsp;")
-    appendTableRow({align: "center", colspan: 2, content: source.name})
+    appendTableRow({colspan: 2, content: source.name})
   }
 
   var n = 0
@@ -236,9 +236,13 @@ var fileCache = []
 var imgCache = []
 
 img.addEventListener("load", function() {
-  addSource(this)
+  addSource(this).
+  then(function() {
+    progress.style.display  = "none"
+    fileInput.style.display = "inline"
+  })
 })
 
 img.src = "../public/1.jpg"
 
-progress.style.display = "none"
+fileInput.style.display = "none"

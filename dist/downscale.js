@@ -18,11 +18,9 @@ function resizeWithCanvas(canvas, source, destWidth, destHeight, sourceX,
   sourceY, sourceWidth, sourceHeight)
 {
   var canvas = document.createElement("canvas")
+
   canvas.width  = destWidth
   canvas.height = destHeight
-
-  var scaleFactorX = destWidth  / sourceWidth
-  var scaleFactorY = destHeight / sourceHeight
 
   var ctx = canvas.getContext("2d")
   ctx.drawImage(source,
@@ -179,14 +177,23 @@ function remapDimensions(destWidth, destHeight, sourceX, sourceY, sourceWidth,
   var origSourceWidth  = sourceWidth
   var origSourceHeight = sourceHeight
 
-  var destRatio   = destWidth / destHeight
   var sourceRatio = sourceWidth / sourceHeight
 
+  if (destWidth === 0) {
+    destWidth = destHeight * sourceRatio >> 0
+  }
+
+  if (destHeight === 0) {
+    destHeight = destWidth / sourceRatio >> 0
+  }
+
+  var destRatio   = destWidth / destHeight
+
   if (destRatio > sourceRatio) {
-    sourceHeight = sourceWidth / destRatio
+    sourceHeight = sourceWidth / destRatio >> 0
   }
   else {
-    sourceWidth = sourceHeight * destRatio
+    sourceWidth = sourceHeight * destRatio >> 0
   }
 
   var sourceX = sourceX || (origSourceWidth  - sourceWidth)  / 2 >> 0

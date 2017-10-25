@@ -1,0 +1,39 @@
+<!DOCTYPE html><html><head>
+
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <style>
+    body {
+      font-size: 1.5rem;
+    }
+    table {
+      margin: 0 auto;
+    }
+    img {
+      display: block;
+    }
+  </style>
+
+</head><body>
+
+  <input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
+  <progress></progress>
+
+  <table>
+    <thead>
+      <tr>
+        <th align="center">Canvas resizing</th>
+        <th align="center">Better downscale</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="text/javascript" src="../src/downsample.js"></script>
+  <script type="text/javascript" src="../src/canvas.js"></script>
+  <script type="text/javascript" src="../src/downscale.js"></script>
+  <script type="text/javascript" src="multiple.js"></script>
+
+</body></html>

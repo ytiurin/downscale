@@ -113,7 +113,7 @@ A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/API/Promise "The Prom
 
 Examples
 --------
-### Using file input
+### Send image data with `<form>`
 This is just a simple code snippet which uses the form file input as a source of the image data.
 #### HTML
 ```html
@@ -142,7 +142,7 @@ function filesChanged(files)
 }
 ```
 
-### Using `FormData` interface
+### Send image data with `FormData`
 You can use even cleaner [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData "The FormData interface provides a way to easily construct a set of key/value pairs representing form fields and their values, which can then be easily sent using the XMLHttpRequest.send() method. It uses the same format a form would use if the encoding type were set to \"multipart/form-data\".") interface to send pure `blob` data to the server.
 #### HTML
 ```html
@@ -179,7 +179,7 @@ function submitForm()
 }
 ```
 
-### Working with `<img>`
+### Resize `<img>` element
 Processing an `<img>` element is quite simple. The function will wait for image load, so you don't have to worry about it.
 #### HTML
 ```html
@@ -197,7 +197,7 @@ then(function(dataURL) {
 })
 ```
 
-### Using URL string
+### Load image from URL
 The function can upload the source image from the given URL with no extra code needed. Keep in mind that the image should share [origin](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin "The Origin request header indicates where a fetch originates from. It doesn't include any path information, but only the server name. It is sent with CORS requests, as well as with POST requests. It is similar to the Referer header, but, unlike this header, it doesn't disclose the whole path.") with the code file.
 ```javascript
 var imageURL = "/public/1.jpg";

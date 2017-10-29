@@ -63,10 +63,10 @@ Promise<DOMString> downscale(source, width, height[, options]);
   </dd>
 
   <dt>width</dt>
-  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" title="The Number JavaScript object is a wrapper object allowing you to work with numerical values. A Number object is created using the Number() constructor."><code>Number</code></a> indicating width of the resulting image.</dd>
+  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" title="The Number JavaScript object is a wrapper object allowing you to work with numerical values. A Number object is created using the Number() constructor."><code>Number</code></a> indicating width of the resulting image. If the value is `0`, the width is adapted to keep the same aspect ratio as in the source image.</dd>
 
   <dt>height</dt>
-  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" title="The Number JavaScript object is a wrapper object allowing you to work with numerical values. A Number object is created using the Number() constructor."><code>Number</code></a> indicating height of the resulting image.</dd>
+  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" title="The Number JavaScript object is a wrapper object allowing you to work with numerical values. A Number object is created using the Number() constructor."><code>Number</code></a> indicating height of the resulting image. If the value is `0`, the height is adapted to keep the same aspect ratio as in the source image.</dd>
 
   <dt>options <sup>(optional)</sup></dt>
   <dd>

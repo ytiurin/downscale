@@ -1,7 +1,7 @@
 
-Better image downscale with canvas ([demo](https://ytiurin.github.io/downscale/ "Quick demo"))
+Better image downscale with canvas ([demo](https://ytiurin.github.io/downscale/demo/ "Quick demo"))
 ===================================
-This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images like photos taken with a smartphone. Check the [demo page](https://ytiurin.github.io/downscale/ "Quick demo").
+This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images like photos taken with a smartphone. Check the [demo page](https://ytiurin.github.io/downscale/demo/ "Quick demo").
 
 ![Better image downscale demo](https://github.com/ytiurin/downscale/raw/master/public/demo.jpg)
 
@@ -11,7 +11,7 @@ While other image resizing libraries are based on complex interpolation algorith
 
 On the other hand, browsers implement very fast [`HTMLCanvasElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement "The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements.") downsampling, when the pixel from source position is directly transfered to the destination position, loosing all the neighbouring pixels information. The resulting image may often look very noisy.
 
-To resolve this problem, the proposed function does simple average downsampling, producing preferable results with relatively small processing time.
+To resolve this problem, the proposed function does a simple area-average downsampling, producing preferable results with relatively small processing time.
 
 Performance
 -----------

@@ -1,7 +1,7 @@
 
-Better image downscale with canvas ([demo](https://ytiurin.github.io/downscale/demo/ "Quick demo"))
+Better image downscale with canvas ([demo](https://ytiurin.github.io/downscale/demo/multiselect.html "Quick demo"))
 ===================================
-This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images like photos taken with a smartphone. Check the [demo page](https://ytiurin.github.io/downscale/demo/ "Quick demo").
+This function downscales images in the browser, producing a better quality result, than the traditional [`CanvasRenderingContext2D.scale()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale "The CanvasRenderingContext2D.scale() method of the Canvas 2D API adds a scaling transformation to the canvas units by x horizontally and by y vertically.") method. It neutralises the "fuzzy" look caused by the native canvas downsampling, when processing relatively large images like photos taken with a smartphone. Check the [demo page](https://ytiurin.github.io/downscale/demo/multiselect.html "Quick demo").
 
 ![Better image downscale demo](https://github.com/ytiurin/downscale/raw/master/public/demo.jpg)
 

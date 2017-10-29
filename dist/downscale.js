@@ -1,4 +1,4 @@
-/* downscale 1.0.0
+/* downscale 1.0.1
    Better image downscale with canvas.
    https://github.com/ytiurin/downscale
    Eugene Tiurin <yevhentiurin@gmail.com>

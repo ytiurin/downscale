@@ -11,8 +11,12 @@
     body {
       font-size: 1.5rem;
     }
-    table {
-      margin: 0 auto;
+    h1, p {
+      width: 1080px;
+    }
+    h1, p, table {
+      margin-left: auto;
+      margin-right: auto;
     }
     img {
       display: block;
@@ -24,8 +28,14 @@
 
 </head><body>
 
-  <input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
-  <progress></progress>
+  <h1>Better image downscale demo (<a href="https://github.com/ytiurin/downscale">fork on Github</a>)</h1>
+  <p>Downscale images with an area-average downsampling and <a href="https://hacks.mozilla.org/2011/12/faster-canvas-pixel-manipulation-with-typed-arrays/" title="Faster Canvas Pixel Manipulation with Typed Arrays">faster pixel manipulation with Typed Arrays</a>.</p>
+  <p>Pick your local images (multiselection works)
+    <input type="file" accept="image/*" onchange="filesChanged(this.files)" multiple />
+    <progress></progress>
+  </p>
+
+  <br/>
 
   <table>
     <thead>
@@ -38,6 +48,6 @@
   </table>
 
   <script type="text/javascript" src="../dist/downscale.js"></script>
-  <script type="text/javascript" src="multiple.js"></script>
+  <script type="text/javascript" src="index.js"></script>
 
 </body></html>

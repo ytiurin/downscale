@@ -243,6 +243,6 @@ img.addEventListener("load", function() {
   })
 })
 
-img.src = "../public/1.jpg"
+img.src = "../public/3.jpg"
 
 fileInput.style.display = "none"

@@ -27,7 +27,7 @@ By default, the source image is cropped in the way, that the center of the sourc
 
 Rollback to `canvas` resizing
 --------
-The function also uses basic `canvas` resizing method when the scale factor of the resulting image is greater then 0.5x. So the better downscaling happen only when the resulting image is at least 2 times smaller then the initial image. In other cases basic `canvas` resizing gives better image quality result.
+The function also uses basic `canvas` resizing method when the scale factor of the resulting image is greater than 0.5x. So the better downscaling happen only when the resulting image is at least 2 times smaller than the initial image. In other cases basic `canvas` resizing gives better image quality result.
 
 Install
 -------

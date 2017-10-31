@@ -1,6 +1,6 @@
 {
   "name": "downscale",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Better image downscale with canvas.",
   "keywords": ["crop", "downscale", "downsample", "fast", "jpeg", "jpg", "image", "linear", "performance", "photo", "pica", "png", "processing", "scale", "canvas", "resample", "resize", "sharp", "simple", "thumbnail", "upload", "webp"],
   "repository": {

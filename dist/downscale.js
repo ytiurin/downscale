@@ -1,4 +1,4 @@
-/* downscale 1.0.1
+/* downscale 1.0.2
    Better image downscale with canvas.
    https://github.com/ytiurin/downscale
    Eugene Tiurin <yevhentiurin@gmail.com>
@@ -23,6 +23,13 @@ function resizeWithCanvas(canvas, source, destWidth, destHeight, sourceX,
   canvas.height = destHeight
 
   var ctx = canvas.getContext("2d")
+
+  ctx.mozImageSmoothingEnabled    = true
+  ctx.imageSmoothingQuality       = "high"
+  ctx.webkitImageSmoothingEnabled = true
+  ctx.msImageSmoothingEnabled     = true
+  ctx.imageSmoothingEnabled       = true
+
   ctx.drawImage(source,
     sourceX, sourceY, sourceWidth, sourceHeight,
     0, 0, destWidth, destHeight)

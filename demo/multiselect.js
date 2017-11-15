@@ -115,6 +115,11 @@ function canvasResizeImg(img, destWidth, destHeight)
   canvas.width  = destWidth
   canvas.height = destHeight
 
+  ctx.imageSmoothingQuality       = "high"
+  ctx.mozImageSmoothingEnabled    = canvasSmoothingEnabled
+  ctx.webkitImageSmoothingEnabled = canvasSmoothingEnabled
+  ctx.msImageSmoothingEnabled     = canvasSmoothingEnabled
+  ctx.imageSmoothingEnabled       = canvasSmoothingEnabled
   ctx.drawImage(img,
     sourceX, sourceY, sourceWidth, sourceHeight,
     0, 0, destWidth, destHeight)
@@ -226,6 +231,20 @@ function filesChanged(files)
   })
 }
 
+function canvasSmoothingChanged(enabled)
+{
+  canvasSmoothingEnabled = enabled
+  tbody.innerHTML = ""
+
+  var input = document.getElementsByTagName("input")[0]
+  if (input.files.length) {
+    input.onchange()
+  }
+  else {
+    img.src = "../public/1.jpg"
+  }
+}
+
 var img = document.createElement('img')
 var canvas = document.createElement('canvas')
 var ctx = canvas.getContext("2d")
@@ -234,6 +253,7 @@ var fileInput = document.getElementsByTagName('input')[0]
 var progress = document.getElementsByTagName('progress')[0]
 var fileCache = []
 var imgCache = []
+var canvasSmoothingEnabled = !1
 
 img.addEventListener("load", function() {
   addSource(this).

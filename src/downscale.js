@@ -7,15 +7,15 @@ function createTiming(enabled, source, destWidth, destHeight)
 
   return {
     mark: enabled ? function(name) {
-      name = `${n}. ${name || "..."}`
+      name = n + ". " + (name || "...")
       timing[name] = { "time (ms)": (new Date) - prev }
       prev = new Date
-      n = `0${(n >> 0) + 1}`.substr(-2)
+      n = ("0" + ((n >> 0) + 1)).substr(-2)
     } : new Function,
     finish: enabled ? function() {
-      timing[`${n}. TOTAL`] = { "time (ms)": (new Date) - start }
+      timing[n + " TOTAL"] = { "time (ms)": (new Date) - start }
       console.log("IMAGE SOURCE:", source)
-      console.log("DOWNSCALE TO:", `${destWidth}x${destHeight}`)
+      console.log("DOWNSCALE TO:", destWidth + "x" + destHeight)
       console.table(timing)
     } : new Function
   }
@@ -129,12 +129,12 @@ function produceResult(canvas, options, callback)
   }
 
   if (options.returnBlob) {
-    canvas.toBlob(callback, `image/${options.imageType || "jpeg"}`,
+    canvas.toBlob(callback, "image/" + (options.imageType || "jpeg"),
       options.quality || .85)
     return
   }
 
-  var dataURL = canvas.toDataURL(`image/${options.imageType || "jpeg"}`,
+  var dataURL = canvas.toDataURL("image/" + (options.imageType || "jpeg"),
     options.quality || .85)
 
   callback(dataURL)
@@ -193,7 +193,7 @@ function detectSourceType(source)
 function validateArguments(args)
 {
   if (args.length < 3) {
-    return new TypeError(`3 arguments required, but only ${args.length} present.`)
+    return new TypeError("3 arguments required, but only " + args.length + " present.")
   }
   if (!detectSourceType(args[0])) {
     return new TypeError("First argument should be HTMLImageElement, HTMLVideoElement, File of String")

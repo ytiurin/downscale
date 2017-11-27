@@ -13,7 +13,7 @@
     "postpublish": "make postpublish",
     "prepublish": "npm run build",
     "pretest": "npm run build",
-    "start": "http-server ./ -c-1",
+    "start": "http-server ./ -c-1 -S",
     "test": "jest"
   },
   "author": {"name" : "Eugene Tiurin", "email" : "yevhentiurin@gmail.com"},

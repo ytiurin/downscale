@@ -289,6 +289,8 @@ function downscale(source, destWidth, destHeight, options)
       timing.mark("DOWNSCALE")
 
       canvas = putImageData(canvas, destImageData)
+
+      setCache && setCache([source, imageData])
     }
     else {
       canvas = resizeWithCanvas(canvas, source, dims.destWidth,
@@ -302,8 +304,6 @@ function downscale(source, destWidth, destHeight, options)
       timing.mark("PRODUCE RESULT")
       resolveResult(result)
       timing.finish()
-
-      setCache && setCache([source, imageData])
     })
   }
 

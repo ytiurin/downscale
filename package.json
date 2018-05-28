@@ -1,8 +1,31 @@
 {
   "name": "downscale",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Better image downscale with canvas.",
-  "keywords": ["crop", "downscale", "downsample", "fast", "jpeg", "jpg", "image", "linear", "performance", "photo", "pica", "png", "processing", "scale", "canvas", "resample", "resize", "sharp", "simple", "thumbnail", "upload", "webp"],
+  "keywords": [
+    "crop",
+    "downscale",
+    "downsample",
+    "fast",
+    "jpeg",
+    "jpg",
+    "image",
+    "linear",
+    "performance",
+    "photo",
+    "pica",
+    "png",
+    "processing",
+    "scale",
+    "canvas",
+    "resample",
+    "resize",
+    "sharp",
+    "simple",
+    "thumbnail",
+    "upload",
+    "webp"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ytiurin/downscale.git"
@@ -11,12 +34,15 @@
   "scripts": {
     "build": "make build",
     "postpublish": "make postpublish",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "pretest": "npm run build",
     "start": "http-server ./ -c-1 -S",
     "test": "jest"
   },
-  "author": {"name" : "Eugene Tiurin", "email" : "yevhentiurin@gmail.com"},
+  "author": {
+    "name": "Eugene Tiurin",
+    "email": "yevhentiurin@gmail.com"
+  },
   "license": "MIT",
   "main": "./dist/downscale.js",
   "devDependencies": {

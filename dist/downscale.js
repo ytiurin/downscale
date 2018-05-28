@@ -1,4 +1,4 @@
-/* downscale 1.0.3
+/* downscale 1.0.4
    Better image downscale with canvas.
    https://github.com/ytiurin/downscale
    Eugene Tiurin <yevhentiurin@gmail.com>
@@ -384,6 +384,8 @@ function downscale(source, destWidth, destHeight, options)
       timing.mark("DOWNSCALE")
 
       canvas = putImageData(canvas, destImageData)
+
+      setCache && setCache([source, imageData])
     }
     else {
       canvas = resizeWithCanvas(canvas, source, dims.destWidth,
@@ -397,8 +399,6 @@ function downscale(source, destWidth, destHeight, options)
       timing.mark("PRODUCE RESULT")
       resolveResult(result)
       timing.finish()
-
-      setCache && setCache([source, imageData])
     })
   }
 

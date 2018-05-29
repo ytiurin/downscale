@@ -269,10 +269,6 @@ function downscale(source, destWidth, destHeight, options)
     return result
   }
 
-  if (detectSourceType(source) !== "HTMLVideoElement") {
-    var setCache = cache.createSetter(source)
-  }
-
   var scaleSourceResolve = function(source, width, height) {
     var dims = remapDimensions(destWidth, destHeight, options.sourceX,
       options.sourceY, width, height)
@@ -290,7 +286,9 @@ function downscale(source, destWidth, destHeight, options)
 
       canvas = putImageData(canvas, destImageData)
 
-      setCache && setCache([source, imageData])
+      if (detectSourceType(source) !== "HTMLVideoElement") {
+          cache.createSetter(source)([source, imageData]);
+      }
     }
     else {
       canvas = resizeWithCanvas(canvas, source, dims.destWidth,

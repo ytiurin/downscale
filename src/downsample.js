@@ -1,6 +1,6 @@
 function round(val)
 {
-  return (val + 0.5) << 0
+  return (val + 0.49) << 0
 }
 
 function downsample(sourceImageData, destWidth, destHeight, sourceX, sourceY,

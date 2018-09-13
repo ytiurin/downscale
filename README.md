@@ -128,12 +128,16 @@ This is just a simple code snippet which uses the form file input as a source of
 ```javascript
 function filesChanged(files)
 {
+  var promises = [];
   for (var i = 0; i < files.length; i++) {
-    downscale(files[i], 400, 400).
-    then(function(dataURL) {
+    promises.push(downscale(files[i], 400, 400))
+  }
+
+  Promise.all(promises).then(function(results) {
+    results.forEach(function(dataURL, idx) {
       var destInput = document.createElement("input");
       destInput.type = "hidden";
-      destInput.name = "image[]";
+      destInput.name = "image[" + idx +"]";
       destInput.value = dataURL;
       // Append image to form as hidden input
       document.forms[0].appendChild(destInput);
@@ -141,8 +145,8 @@ function filesChanged(files)
       var destImg = document.createElement("img");
       destImg.src = dataURL;
       document.body.appendChild(destImg);
-    })
-  }
+    });
+  })
 }
 ```
 

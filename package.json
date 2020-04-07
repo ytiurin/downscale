@@ -46,7 +46,7 @@
   "license": "MIT",
   "main": "./dist/downscale.js",
   "devDependencies": {
-    "http-server": "^0.10.0",
-    "jest": "^21.0.2"
+    "http-server": "^0.12.1",
+    "jest": "^25.2.7"
   }
 }
